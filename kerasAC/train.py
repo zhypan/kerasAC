@@ -34,6 +34,7 @@ def parse_args():
     parser.add_argument("--num_tasks",type=int)
     #add functionality to train on individuals' allele frequencies
     parser.add_argument("--vcf_file",default=None)
+    parser.add_argument("--var_encoding",type=str,default='freq',help="Options are freq, personal, or none")
     parser.add_argument("--global_vcf",action="store_true")
     parser.add_argument("--revcomp",action="store_true")
     parser.add_argument("--epochs",type=int,default=40)
@@ -133,6 +134,8 @@ def initialize_generators(args):
                                   chroms_to_use=args.train_chroms,
                                   get_w1_w0=args.weighted,
                                   expand_dims=args.expand_dims,
+                                  vcf_file=vcf_file,
+                                  var_encoding=var_encoding,
                                   tasks=args.tasks)
     print("generated training data generator!")
     if args.valid_upsample==None:
