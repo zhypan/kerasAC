@@ -134,8 +134,8 @@ def initialize_generators(args):
                                   chroms_to_use=args.train_chroms,
                                   get_w1_w0=args.weighted,
                                   expand_dims=args.expand_dims,
-                                  vcf_file=vcf_file,
-                                  var_encoding=var_encoding,
+                                  vcf_file=args.vcf_file,
+                                  var_encoding=args.var_encoding,
                                   tasks=args.tasks)
     print("generated training data generator!")
     if args.valid_upsample==None:

@@ -121,8 +121,8 @@ class DataGenerator(Sequence):
                  chroms_to_use=None,
                  get_w1_w0=False,
                  expand_dims=True,
-                 vcf_file=vcf_file,
-                 var_encoding=var_encoding,
+                 vcf_file=None,
+                 var_encoding='freq',
                  shuffle=True):
 
         self.lock = threading.Lock()
@@ -194,7 +194,6 @@ class DataGenerator(Sequence):
                 np.random.shuffle(self.pos_indices)
                 np.random.shuffle(self.neg_indices)
 
-        self.vcf = None
         if vcf_file != None:
             self.vcf = tabix.open(vcf_file)
         self.var_encoding = var_encoding
@@ -270,48 +269,49 @@ class DataGenerator(Sequence):
                 cur_end=bed_entry[2]
                 max_offset=cur_end-cur_start
                 variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
-                if variants != []
+                if variants != []:
                     for variant in variants:
                         if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1:
                             pos=int(variant[1])
                             offset=int(pos-1-cur_start)
-                            assert offset >= max_offset
-                            pos_seqs[seq_index][offset] = variant[4]
+                            assert offset <= max_offset
+                            pos_seqs[seq_index] = pos_seqs[seq_index][:offset] + variant[4] + pos_seqs[seq_index][offset+1:]
             for seq_index in range(len(neg_bed_entries)):
                 bed_entry=neg_bed_entries[seq_index]
                 cur_start=bed_entry[1]
                 cur_end=bed_entry[2]
                 max_offset=cur_end-cur_start
                 variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
-                if variants != []
+                if variants != []:
                     for variant in variants:
                         if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1:
                             pos=int(variant[1])
                             offset=int(pos-1-cur_start)
-                            assert offset >= max_offset
-                            neg_seqs[seq_index][offset] = variant[4]
+                            assert offset <= max_offset
+                            neg_seqs[seq_index] = neg_seqs[seq_index][:offset] + variant[4] + neg_seqs[seq_index][offset+1:]
 
 
         if self.vcf != None and self.var_encoding == 'freq':
             if self.add_revcomp == True:
                 pos_seqs_rc = [revcomp(s) for s in pos_seqs]
                 neg_seqs_rc = [revcomp(s) for s in neg_seqs]
-                pos_seqs_rc = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in pos_seqs_rc])
-                neg_seqs_rc = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in neg_seqs_rc])
-            pos_seqs = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in pos_seqs])
-            neg_seqs = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in neg_seqs])
+                pos_seqs_rc = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in pos_seqs_rc]
+                neg_seqs_rc = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in neg_seqs_rc]
+            pos_seqs = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in pos_seqs]
+            neg_seqs = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in neg_seqs]
             for seq_index in range(len(pos_bed_entries)):
                 bed_entry=pos_bed_entries[seq_index]
                 cur_start=bed_entry[1]
                 cur_end=bed_entry[2]
                 max_offset=cur_end-cur_start
                 variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
-                if variants != []
+                if variants != []:
                     for variant in variants:
                         if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1:
                             pos=int(variant[1])
                             offset=int(pos-1-cur_start)
-                            assert offset >= max_offset
+                            assert offset <= max_offset
+                            assert pos_seqs[seq_index][offset][base_to_index[variant[3]]] == 1
                             pos_seqs[seq_index][offset][base_to_index[variant[3]]] = 0.5
                             pos_seqs[seq_index][offset][base_to_index[variant[4]]] = 0.5
                             if self.add_revcomp == True:
@@ -323,12 +323,13 @@ class DataGenerator(Sequence):
                 cur_end=bed_entry[2]
                 max_offset=cur_end-cur_start
                 variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
-                if variants != []
+                if variants != []:
                     for variant in variants:
                         if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1:
                             pos=int(variant[1])
                             offset=int(pos-1-cur_start)
-                            assert offset >= max_offset
+                            assert offset <= max_offset
+                            assert neg_seqs[seq_index][offset][base_to_index[variant[3]]] == 1
                             neg_seqs[seq_index][offset][base_to_index[variant[3]]] = 0.5
                             neg_seqs[seq_index][offset][base_to_index[variant[4]]] = 0.5
                             if self.add_revcomp == True:
@@ -338,7 +339,7 @@ class DataGenerator(Sequence):
             if self.add_revcomp == True:
                 seqs_rc = pos_seqs_rc + neg_seqs_rc
                 seqs = seqs + seqs_rc
-            seqs = np.arrary(seqs)
+            seqs = np.array(seqs)
 
         else:
             seqs=pos_seqs+neg_seqs

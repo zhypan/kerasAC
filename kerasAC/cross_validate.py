@@ -30,6 +30,7 @@ def parse_args():
 
     #add functionality to train on individuals' allele frequencies
     parser.add_argument("--vcf_file",default=None)
+    parser.add_argument("--var_encoding",type=str,default='freq',help="Options are freq, personal, or none")
     parser.add_argument("--global_vcf",action="store_true")
     parser.add_argument("--revcomp",action="store_true")
     parser.add_argument("--epochs",type=int,default=40)
