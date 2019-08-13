@@ -118,6 +118,8 @@ def get_predictions_basic(args,model):
                                  add_revcomp=False,
                                  chroms_to_use=args.predict_chroms,
                                  expand_dims=args.expand_dims,
+                                 vcf_file=args.vcf_file,
+                                 var_encoding=args.var_encoding,
                                  tasks=args.tasks,
                                  shuffle=False)
     predictions=model.predict_generator(test_generator,

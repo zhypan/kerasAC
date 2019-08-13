@@ -154,6 +154,8 @@ def initialize_generators(args):
                                   upsample_ratio=valid_upsample_ratio,
                                   chroms_to_use=args.validation_chroms,
                                   expand_dims=args.expand_dims,
+                                  vcf_file=args.vcf_file,
+                                  var_encoding=args.var_encoding,
                                   tasks=args.tasks)
     print("generated validation data generator!")
     return train_generator, valid_generator 

@@ -195,7 +195,7 @@ class DataGenerator(Sequence):
                 np.random.shuffle(self.neg_indices)
 
         if vcf_file != None:
-            self.vcf = tabix.open(vcf_file)
+            self.vcf = vcf_file
         self.var_encoding = var_encoding
 
 
@@ -263,12 +263,13 @@ class DataGenerator(Sequence):
                          'T':3}
 
         if self.vcf != None and self.var_encoding == 'personal':
+            vcf_ = tabix.open(self.vcf)
             for seq_index in range(len(pos_bed_entries)):
                 bed_entry=pos_bed_entries[seq_index]
                 cur_start=bed_entry[1]
                 cur_end=bed_entry[2]
                 max_offset=cur_end-cur_start
-                variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
+                variants=[i for i in vcf_.query(bed_entry[0],bed_entry[1],bed_entry[2])]
                 if variants != []:
                     for variant in variants:
                         if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1 and variant[9].split(':')[0] == '1/1':
@@ -281,7 +282,7 @@ class DataGenerator(Sequence):
                 cur_start=bed_entry[1]
                 cur_end=bed_entry[2]
                 max_offset=cur_end-cur_start
-                variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
+                variants=[i for i in vcf_.query(bed_entry[0],bed_entry[1],bed_entry[2])]
                 if variants != []:
                     for variant in variants:
                         if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1 and variant[9].split(':')[0] == '1/1':
@@ -292,6 +293,7 @@ class DataGenerator(Sequence):
 
 
         if self.vcf != None and self.var_encoding == 'freq':
+            vcf_ = tabix.open(self.vcf)
             if self.add_revcomp == True:
                 pos_seqs_rc = [revcomp(s) for s in pos_seqs]
                 neg_seqs_rc = [revcomp(s) for s in neg_seqs]
@@ -304,7 +306,7 @@ class DataGenerator(Sequence):
                 cur_start=bed_entry[1]
                 cur_end=bed_entry[2]
                 max_offset=cur_end-cur_start
-                variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
+                variants=[i for i in vcf_.query(bed_entry[0],bed_entry[1],bed_entry[2])]
                 if variants != []:
                     for variant in variants:
                         if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1:
@@ -322,7 +324,7 @@ class DataGenerator(Sequence):
                 cur_start=bed_entry[1]
                 cur_end=bed_entry[2]
                 max_offset=cur_end-cur_start
-                variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
+                variants=[i for i in vcf_.query(bed_entry[0],bed_entry[1],bed_entry[2])]
                 if variants != []:
                     for variant in variants:
                         if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1:
@@ -379,12 +381,13 @@ class DataGenerator(Sequence):
         seqs=[self.ref.fetch(i[0],i[1],i[2]) for i in bed_entries]
 
         if self.vcf != None and self.var_encoding == 'personal':
+            vcf_ = tabix.open(self.vcf)
             for seq_index in range(len(bed_entries)):
                 bed_entry=bed_entries[seq_index]
                 cur_start=bed_entry[1]
                 cur_end=bed_entry[2]
                 max_offset=cur_end-cur_start
-                variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
+                variants=[i for i in vcf_.query(bed_entry[0],bed_entry[1],bed_entry[2])]
                 if variants != []:
                     for variant in variants:
                         if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1 and variant[9].split(':')[0] == '1/1':
