@@ -271,7 +271,7 @@ class DataGenerator(Sequence):
                 variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
                 if variants != []:
                     for variant in variants:
-                        if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1:
+                        if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1 and variant[9].split(':')[0] == '1/1':
                             pos=int(variant[1])
                             offset=int(pos-1-cur_start)
                             assert offset <= max_offset
@@ -284,7 +284,7 @@ class DataGenerator(Sequence):
                 variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
                 if variants != []:
                     for variant in variants:
-                        if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1:
+                        if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1 and variant[9].split(':')[0] == '1/1':
                             pos=int(variant[1])
                             offset=int(pos-1-cur_start)
                             assert offset <= max_offset
@@ -377,6 +377,22 @@ class DataGenerator(Sequence):
             bed_entries=np.concatenate((self.nonzero_bins.index[pos_inds],self.universal_negatives.index[neg_inds-self.universal_negative_offset]),axis=0)
         #get sequences
         seqs=[self.ref.fetch(i[0],i[1],i[2]) for i in bed_entries]
+
+        if self.vcf != None and self.var_encoding == 'personal':
+            for seq_index in range(len(bed_entries)):
+                bed_entry=bed_entries[seq_index]
+                cur_start=bed_entry[1]
+                cur_end=bed_entry[2]
+                max_offset=cur_end-cur_start
+                variants=[i for i in self.vcf.query(bed_entry[0],bed_entry[1],bed_entry[2])]
+                if variants != []:
+                    for variant in variants:
+                        if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1 and variant[9].split(':')[0] == '1/1':
+                            pos=int(variant[1])
+                            offset=int(pos-1-cur_start)
+                            assert offset <= max_offset
+                            seqs[seq_index] = seqs[seq_index][:offset] + variant[4] + seqs[seq_index][offset+1:]
+
         if self.add_revcomp==True:
             #add in the reverse-complemented sequences for training.
             seqs_rc=[revcomp(s) for s in seqs]

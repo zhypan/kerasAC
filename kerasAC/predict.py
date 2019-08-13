@@ -146,6 +146,8 @@ def get_predictions_basic(args,model):
                                      batch_size=args.batch_size,
                                      chroms_to_use=args.predict_chroms,
                                      expand_dims=args.expand_dims,
+                                     vcf_file=args.vcf_file,
+                                     var_encoding=args.var_encoding,
                                      tasks=args.tasks,
                                      shuffle=False)
         
@@ -219,6 +221,8 @@ def parse_args():
     parser.add_argument('--predict_chroms',nargs="*",default=None) 
     parser.add_argument('--data_hammock',help='input file is in hammock format, with unique id for each peak')
     parser.add_argument('--variant_bed')
+    parser.add_argument("--vcf_file",default=None) 
+    parser.add_argument("--var_encoding",type=str,default='freq',help="Options are freq, personal, or none")
     parser.add_argument('--predictions_pickle',help='name of pickle to save predictions',default=None)
     parser.add_argument('--performance_metrics_classification_file',help='file name to save accuracy metrics; accuracy metrics not computed if file not provided',default=None)
     parser.add_argument('--performance_metrics_regression_file',help='file name to save accuracy metrics; accuracy metrics not computed if file not provided',default=None)
