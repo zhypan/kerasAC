@@ -263,6 +263,7 @@ class DataGenerator(Sequence):
                          'T':3}
 
         if self.vcf != None and self.var_encoding == 'personal':
+            print("here")
             vcf_ = tabix.open(self.vcf)
             for seq_index in range(len(pos_bed_entries)):
                 bed_entry=pos_bed_entries[seq_index]
@@ -276,6 +277,7 @@ class DataGenerator(Sequence):
                             pos=int(variant[1])
                             offset=int(pos-1-cur_start)
                             assert offset <= max_offset
+                            assert pos_seqs[seq_index][offset] == variant[3]
                             pos_seqs[seq_index] = pos_seqs[seq_index][:offset] + variant[4] + pos_seqs[seq_index][offset+1:]
             for seq_index in range(len(neg_bed_entries)):
                 bed_entry=neg_bed_entries[seq_index]
@@ -289,6 +291,7 @@ class DataGenerator(Sequence):
                             pos=int(variant[1])
                             offset=int(pos-1-cur_start)
                             assert offset <= max_offset
+                            assert neg_seqs[seq_index][offset] == variant[3]
                             neg_seqs[seq_index] = neg_seqs[seq_index][:offset] + variant[4] + neg_seqs[seq_index][offset+1:]
 
 
@@ -314,11 +317,26 @@ class DataGenerator(Sequence):
                             offset=int(pos-1-cur_start)
                             assert offset <= max_offset
                             assert pos_seqs[seq_index][offset][base_to_index[variant[3]]] == 1
-                            pos_seqs[seq_index][offset][base_to_index[variant[3]]] = 0.5
-                            pos_seqs[seq_index][offset][base_to_index[variant[4]]] = 0.5
-                            if self.add_revcomp == True:
-                                pos_seqs_rc[seq_index][len(pos_bed_entries[seq_index])-1-offset][base_to_index[revcomp(variant[3])]] = 0.5
-                                pos_seqs_rc[seq_index][len(pos_bed_entries[seq_index])-1-offset][base_to_index[revcomp(variant[4])]] = 0.5
+                            if variant[9].split(':')[0] == '1/1':
+                                var = [[0,0,0,0]]
+                                var[0][base_to_index[variant[3]]] = 0
+                                var[0][base_to_index[variant[4]]] = 1
+                                pos_seqs[seq_index] = pos_seqs[seq_index][:offset] + var + pos_seqs[seq_index][offset+1:]
+                                if self.add_revcomp == True:
+                                    rc_var = [[0,0,0,0]]
+                                    rc_var[0][base_to_index[revcomp(variant[3])]] = 0
+                                    rc_var[0][base_to_index[revcomp(variant[4])]] = 1
+                                    pos_seqs_rc[seq_index] = pos_seqs_rc[seq_index][:(len(pos_bed_entries[seq_index])-1-offset)] + rc_var + pos_seqs_rc[seq_index][(len(pos_bed_entries[seq_index]) - offset):]
+                            elif variant[9].split(':')[0] == '0/1':
+                                var = [[0,0,0,0]]
+                                var[0][base_to_index[variant[3]]] = 1
+                                var[0][base_to_index[variant[4]]] = 1
+                                pos_seqs[seq_index] = pos_seqs[seq_index][:offset] + var + pos_seqs[seq_index][offset+1:]
+                                if self.add_revcomp == True:
+                                    rc_var = [[0,0,0,0]]
+                                    rc_var[0][base_to_index[revcomp(variant[3])]] = 1
+                                    rc_var[0][base_to_index[revcomp(variant[4])]] = 1
+                                    pos_seqs_rc[seq_index] = pos_seqs_rc[seq_index][:(len(pos_bed_entries[seq_index])-1-offset)] + rc_var + pos_seqs_rc[seq_index][(len(pos_bed_entries[seq_index]) - offset):]
             for seq_index in range(len(neg_bed_entries)):
                 bed_entry=neg_bed_entries[seq_index]
                 cur_start=bed_entry[1]
@@ -332,11 +350,26 @@ class DataGenerator(Sequence):
                             offset=int(pos-1-cur_start)
                             assert offset <= max_offset
                             assert neg_seqs[seq_index][offset][base_to_index[variant[3]]] == 1
-                            neg_seqs[seq_index][offset][base_to_index[variant[3]]] = 0.5
-                            neg_seqs[seq_index][offset][base_to_index[variant[4]]] = 0.5
-                            if self.add_revcomp == True:
-                                neg_seqs_rc[seq_index][len(neg_bed_entries[seq_index])-1-offset][base_to_index[revcomp(variant[3])]] = 0.5
-                                neg_seqs_rc[seq_index][len(neg_bed_entries[seq_index])-1-offset][base_to_index[revcomp(variant[4])]] = 0.5
+                            if variant[9].split(':')[0] == '1/1':
+                                var = [[0,0,0,0]]
+                                var[0][base_to_index[variant[3]]] = 0
+                                var[0][base_to_index[variant[4]]] = 1
+                                neg_seqs[seq_index] = neg_seqs[seq_index][:offset] + var + neg_seqs[seq_index][offset+1:]
+                                if self.add_revcomp == True:
+                                    rc_var = [[0,0,0,0]]
+                                    rc_var[0][base_to_index[revcomp(variant[3])]] = 0
+                                    rc_var[0][base_to_index[revcomp(variant[4])]] = 1
+                                    neg_seqs_rc[seq_index] = neg_seqs_rc[seq_index][:(len(neg_bed_entries[seq_index])-1-offset)] + rc_var + neg_seqs_rc[seq_index][(len(neg_bed_entries[seq_index]) - offset):]
+                            elif variant[9].split(':')[0] == '0/1':
+                                var = [[0,0,0,0]]
+                                var[0][base_to_index[variant[3]]] = 1
+                                var[0][base_to_index[variant[4]]] = 1
+                                neg_seqs[seq_index] = neg_seqs[seq_index][:offset] + var + neg_seqs[seq_index][offset+1:]
+                                if self.add_revcomp == True:
+                                    rc_var = [[0,0,0,0]]
+                                    rc_var[0][base_to_index[revcomp(variant[3])]] = 1
+                                    rc_var[0][base_to_index[revcomp(variant[4])]] = 1
+                                    neg_seqs_rc[seq_index] = neg_seqs_rc[seq_index][:(len(neg_bed_entries[seq_index])-1-offset)] + rc_var + neg_seqs_rc[seq_index][(len(neg_bed_entries[seq_index]) - offset):]
             seqs = pos_seqs + neg_seqs
             if self.add_revcomp == True:
                 seqs_rc = pos_seqs_rc + neg_seqs_rc
@@ -394,14 +427,56 @@ class DataGenerator(Sequence):
                             pos=int(variant[1])
                             offset=int(pos-1-cur_start)
                             assert offset <= max_offset
+                            assert seqs[seq_index][offset] == variant[3]
                             seqs[seq_index] = seqs[seq_index][:offset] + variant[4] + seqs[seq_index][offset+1:]
 
-        if self.add_revcomp==True:
-            #add in the reverse-complemented sequences for training.
-            seqs_rc=[revcomp(s) for s in seqs]
-            seqs=seqs+seqs_rc
-        #one-hot-encode the fasta sequences
-        seqs=np.array([[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in seqs])
+        if self.vcf != None and self.var_encoding == 'freq':
+            vcf_ = tabix.open(self.vcf)
+            if self.add_revcomp == True:
+                seqs_rc = [revcomp(s) for s in seqs]
+                seqs_rc = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in seqs_rc]
+            seqs = [[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in seqs]
+            for seq_index in range(len(bed_entries)):
+                bed_entry=bed_entries[seq_index]
+                cur_start=bed_entry[1]
+                cur_end=bed_entry[2]
+                max_offset=cur_end-cur_start
+                variants=[i for i in vcf_.query(bed_entry[0],bed_entry[1],bed_entry[2])]
+                if variants != []:
+                    for variant in variants:
+                        if len(variant[3]) == len(variant[4]) and len(variant[4]) == 1:
+                            pos=int(variant[1])
+                            offset=int(pos-1-cur_start)
+                            assert offset <= max_offset
+                            assert seqs[seq_index][offset][base_to_index[variant[3]]] == 1
+                            if variant[9].split(':')[0] == '1/1':
+                                var = [[0,0,0,0]]
+                                var[0][base_to_index[variant[3]]] = 0
+                                var[0][base_to_index[variant[4]]] = 1
+                                seqs[seq_index] = seqs[seq_index][:offset] + var + seqs[seq_index][offset+1:]
+                                if self.add_revcomp == True:
+                                    rc_var = [[0,0,0,0]]
+                                    rc_var[0][base_to_index[revcomp(variant[3])]] = 0
+                                    rc_var[0][base_to_index[revcomp(variant[4])]] = 1
+                                    seqs_rc[seq_index] = seqs_rc[seq_index][:(len(bed_entries[seq_index])-1-offset)] + rc_var + seqs_rc[seq_index][(len(bed_entries[seq_index]) - offset):]
+                            elif variant[9].split(':')[0] == '0/1':
+                                var = [[0,0,0,0]]
+                                var[0][base_to_index[variant[3]]] = 1
+                                var[0][base_to_index[variant[4]]] = 1
+                                seqs[seq_index] = seqs[seq_index][:offset] + var + seqs[seq_index][offset+1:]
+                                if self.add_revcomp == True:
+                                    rc_var = [[0,0,0,0]]
+                                    rc_var[0][base_to_index[revcomp(variant[3])]] = 1
+                                    rc_var[0][base_to_index[revcomp(variant[4])]] = 1
+
+        else:
+            if self.add_revcomp==True:
+                #add in the reverse-complemented sequences for training.
+                seqs_rc=[revcomp(s) for s in seqs]
+                seqs=seqs+seqs_rc
+            #one-hot-encode the fasta sequences
+            seqs=np.array([[ltrdict.get(x,[0,0,0,0]) for x in seq] for seq in seqs])
+
         x_batch=seqs
         if(self.expand_dims==True):
             x_batch=np.expand_dims(x_batch,1)
