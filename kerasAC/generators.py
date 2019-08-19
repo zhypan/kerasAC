@@ -413,6 +413,15 @@ class DataGenerator(Sequence):
         #get sequences
         seqs=[self.ref.fetch(i[0],i[1],i[2]) for i in bed_entries]
 
+        base_to_index = {'a':0,
+                         'c':1,
+                         'g':2,
+                         't':3,
+                         'A':0,
+                         'C':1,
+                         'G':2,
+                         'T':3}
+
         if self.vcf != None and self.var_encoding == 'personal':
             vcf_ = tabix.open(self.vcf)
             for seq_index in range(len(bed_entries)):
